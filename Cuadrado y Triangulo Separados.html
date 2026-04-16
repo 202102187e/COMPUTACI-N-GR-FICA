@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h2>CUADRADO ARRIBA Y TRIÁNGULO ABAJO</h2>
+    <h3>REALIZADO POR MAX KERVIN PANUERA HUARHUA</h3>
+
+    <canvas id="myCanvas" width="500" height="500" style="border:4px solid black;"></canvas>
+
+    <script>
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Dibujar línea horizontal (mitad del canvas)
+        ctx.beginPath();
+        ctx.moveTo(0, 250);   // izquierda
+        ctx.lineTo(500, 250); // derecha
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Dibujar cuadrado ARRIBA
+        ctx.beginPath();
+        ctx.rect(200, 50, 100, 100); // centrado arriba
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.stroke();
+
+        // Dibujar triángulo ABAJO (azul)
+        ctx.beginPath();
+        ctx.moveTo(250, 350);  // vértice superior
+        ctx.lineTo(300, 450);  // abajo derecha
+        ctx.lineTo(200, 450);  // abajo izquierda
+        ctx.closePath();
+        ctx.fillStyle = "blue";
+        ctx.fill();
+        ctx.stroke();
+    </script>
+</body>
+</html>

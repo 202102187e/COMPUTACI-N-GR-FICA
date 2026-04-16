@@ -1,56 +1,38 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gráfico de Barras</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 </head>
 <body>
+    <H2>CREAR UN CUADRADO Y UN TRIÁNGULO</H2>
+    <h3>REALIZADO POR MAX KERVIN PANUERA HUARHUA</h3>
 
-<h2>Gráfico de Barras</h2>
-<h3>PANUERA HUARHUA MAX KERVIN</h3>
+    <CANVAS id="myCanvas" width="500" height="500" style="border:4px solid black;"></CANVAS>
 
-<canvas id="myCanvas" width="500" height="500" style="border:3px solid black;"></canvas>
+    <SCRIPt>
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
 
-<script>
-    var canvas = document.getElementById("myCanvas");
-    var ctx = canvas.getContext("2d");
+        // Dibujar un cuadrado
+        ctx.beginPath();
+        ctx.rect(50, 50, 100, 150);  // x,y , ancho, alto
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.stroke();
 
-    // Dibujar SOLO ejes (no cuadro)
-    ctx.beginPath();
-    ctx.moveTo(50, 450); // eje X
-    ctx.lineTo(450, 450);
 
-    ctx.moveTo(50, 450); // eje Y
-    ctx.lineTo(50, 50);
-
-    ctx.stroke();
-
-    // Datos
-    var datos = [50, 60, 70, 90, 100];
-    var colores = ["red", "blue", "green", "orange", "purple"];
-
-    var x = 80;
-    var ancho = 50;
-
-    for (var i = 0; i < datos.length; i++) {
-
-        var valor = datos[i];
-        var altura = valor * 3;
-
-        ctx.fillStyle = colores[i];
-
-        // Barra
-        ctx.fillRect(x, 450 - altura, ancho, altura);
-
-        // Texto
-        ctx.fillStyle = "black";
-        ctx.font = "14px Arial";
-        ctx.fillText(valor + "%", x + 5, 450 - altura - 5);
-
-        x += 70;
-    }
-
-</script>
-
+        // Dibujar un triángulo
+        ctx.beginPath();
+        ctx.moveTo(250, 50);  // inicio en el vertice superior del triángulo
+        ctx.lineTo(300, 150);  // vertice inferior derecho del triángulo
+        ctx.lineTo(200, 150);  // vertice inferior izquierdo del triángulo
+        ctx.closePath();
+        ctx.fillStyle = "lightcoral";
+        ctx.fill();
+        ctx.stroke();
+    </SCRIPt>
+    
 </body>
 </html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h2>Gráfica de y = x²</h2>
+    <h3>REALIZADO POR MAX KERVIN PANUERA HUARHUA</h3>
+
+    <canvas id="myCanvas" width="500" height="500" style="border:2px solid black;"></canvas>
+
+    <script>
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Dibujar ejes
+        ctx.beginPath();
+        ctx.moveTo(0, 250);   // eje X
+        ctx.lineTo(500, 250);
+        ctx.moveTo(250, 0);   // eje Y
+        ctx.lineTo(250, 500);
+        ctx.stroke();
+
+        // Graficar y = x^2
+        ctx.beginPath();
+
+        for (let x = -10; x <= 10; x += 0.1) {
+            let y = x * x;
+
+            // Escala
+            let canvasX = 250 + x * 20;
+            let canvasY = 250 - y * 2;
+
+            if (x === -10) {
+                ctx.moveTo(canvasX, canvasY);
+            } else {
+                ctx.lineTo(canvasX, canvasY);
+            }
+        }
+
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    </script>
+</body>
+</html>
