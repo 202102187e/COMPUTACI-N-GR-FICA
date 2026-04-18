@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <h1>MAX KERVIN PANUERA HUARHUA</h1>
+  <style>
+    
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      border: 1px solid #444;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Línea Dinámica (Mejorada)</h2>
+<canvas id="myCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("myCanvas");
+const ctx = canvas.getContext("2d");
+
+// Ajuste automático del tamaño
+canvas.width = window.innerWidth;
+canvas.height = 400;
+
+let time = 0;
+
+// Función de dibujo
+function drawGraph() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#00d4ff";
+  ctx.lineWidth = 2;
+
+  const amplitude = 80;
+  const frequency = 0.02;
+
+  for (let x = 0; x < canvas.width; x++) {
+    const y = Math.sin(x * frequency + time) * amplitude;
+
+    if (x === 0) {
+      ctx.moveTo(x, canvas.height / 2 - y);
+    } else {
+      ctx.lineTo(x, canvas.height / 2 - y);
+    }
+  }
+
+  ctx.stroke();
+}
+
+// Animación optimizada
+function animate() {
+  time += 0.05;
+  drawGraph();
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+// Ajustar tamaño si cambia la ventana
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+});
+</script>
+
+</body>
+</html>
