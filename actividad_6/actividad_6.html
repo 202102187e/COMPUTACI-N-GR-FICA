@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computación Gráfica - Curvas Paramétricas y Mallas Poligonales</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        header {
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6, #1e40af);
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Botón de regresar */
+        .back-button {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            padding: 12px 26px;
+            background: rgba(30, 41, 59, 0.95);
+            color: #e2e8f0;
+            border: 1px solid rgba(56, 189, 248, 0.6);
+            border-radius: 50px;
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            z-index: 100;
+        }
+        .back-button:hover {
+            background: #38bdf8;
+            color: #0f172a;
+            transform: translateX(-6px);
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.5);
+        }
+
+        header h1 {
+            font-size: 3.2em;
+            margin: 0 0 15px 0;
+            background: linear-gradient(45deg, #60a5fa, #a78bfa, #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .container { max-width: 1450px; margin: auto; padding: 0 25px; }
+        section { padding: 90px 0; }
+        h2 {
+            font-size: 2.8em;
+            color: #38bdf8;
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        h2::after {
+            content: '';
+            display: block;
+            width: 120px;
+            height: 5px;
+            background: linear-gradient(90deg, #38bdf8, #a78bfa);
+            margin: 25px auto;
+            border-radius: 3px;
+        }
+        .card {
+            background: rgba(30, 41, 59, 0.96);
+            padding: 45px;
+            border-radius: 24px;
+            margin: 40px 0;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.35);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            transition: transform 0.3s ease;
+        }
+        .card:hover { transform: translateY(-8px); }
+        .canvas-container {
+            text-align: center;
+            margin: 40px 0;
+            padding: 25px;
+            background: rgba(2, 6, 23, 0.85);
+            border-radius: 18px;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+        canvas {
+            border-radius: 14px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            max-width: 100%;
+            height: auto;
+        }
+        .controls {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 25px 0;
+            align-items: center;
+        }
+        select, input[type="range"], button, input[type="number"] {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.95);
+            color: #e2e8f0;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        button {
+            background: linear-gradient(45deg, #38bdf8, #60a5fa);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        button:hover { transform: scale(1.08); box-shadow: 0 8px 20px rgba(56,189,248,0.4); }
+        .equation {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 25px;
+            border-radius: 14px;
+            border-left: 6px solid #38bdf8;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.15em;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+        .theory {
+            background: rgba(30, 41, 59, 0.7);
+            padding: 30px;
+            border-radius: 16px;
+            margin: 30px 0;
+        }
+        .theory h3 { color: #67e8f9; margin-top: 0; }
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(90deg, #1e293b, #334155);
+            margin-top: 100px;
+            font-size: 1.1em;
+        }
+        .info-box {
+            padding: 20px;
+            background: rgba(56,189,248,0.1);
+            border-left: 5px solid #38bdf8;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- Botón para regresar -->
+        <a href="#" onclick="window.history.back(); return false;" class="back-button">
+            ← Regresar
+        </a>
+
+        <div class="container">
+            <h2>ACTIVIDAD 6</h2>
+            <p style="font-size: 1.4em; max-width: 800px; margin: 0 auto;">
+                - Curvas Paramétricas<br>
+				- Mallas Poligonales
+            </p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- ==================== CURVAS PARAMÉTRICAS ==================== -->
+        <section id="curvas-section">
+            <h2>🔄 1. Curvas Paramétricas</h2>
+           
+            <div class="card">
+                <h3>📐 Definición Matemática</h3>
+                <div class="theory">
+                    <p>Una <strong>curva paramétrica</strong> en el plano se define como una función vectorial <strong>γ(t) = (x(t), y(t))</strong>, donde <strong>t</strong> es un parámetro que varía en un intervalo [t₀, t₁].</p>
+                    <p>A diferencia de las ecuaciones explícitas (y = f(x)) o implícitas (F(x,y) = 0), las formas paramétricas permiten:</p>
+                    <ul>
+                        <li>Representar fácilmente curvas cerradas, espirales y curvas que no son funciones.</li>
+                        <li>Controlar la velocidad y dirección de recorrido mediante la derivada γ'(t).</li>
+                        <li>Evitar problemas de pendiente infinita (ej. curvas verticales).</li>
+                    </ul>
+                    <div class="equation">
+                        γ(t) = (x(t), y(t))<br>
+                        t ∈ [a, b]<br><br>
+                        Derivada (vector tangente): γ'(t) = (x'(t), y'(t))
+                    </div>
+                    <p><strong>Ventajas en Computación Gráfica:</strong> Se usan en animación (trayectorias), modelado de caminos, curvas de Bézier (caso especial), y como base para superficies paramétricas (u,v).</p>
+                </div>
+
+                <div class="canvas-container">
+                    <h3>🎮 Visualización Interactiva de Curvas Paramétricas</h3>
+                    <canvas id="curvaCanvas" width="780" height="520"></canvas>
+                    <div class="controls">
+                        <select id="curvaTipo">
+                            <option value="circulo">○ Circunferencia</option>
+                            <option value="elipse">◇ Elipse</option>
+                            <option value="espiral">🌀 Espiral de Arquímedes</option>
+                            <option value="lissajous">✨ Figura de Lissajous</option>
+                            <option value="hipocicloide">⭐ Hipocicloide (Deltoide)</option>
+                            <option value="trocoide">🌟 Trocoide (Cicloide generalizada)</option>
+                        </select>
+                        <label>Velocidad: <input type="range" id="velocidad" min="0.005" max="0.12" step="0.005" value="0.035"></label>
+                        <label>Tamaño: <input type="range" id="tamano" min="40" max="220" value="140"></label>
+                        <label>Parámetro extra: <input type="range" id="paramExtra" min="0.5" max="4" step="0.1" value="2"></label>
+                        <button onclick="toggleCurvaAnim()">⏯️ Pausar / Reanudar</button>
+                        <button onclick="resetCurva()">🔄 Reiniciar</button>
+                    </div>
+                    <div class="info-box" id="curvaInfo">
+                        Selecciona una curva y ajusta los controles. Observa cómo el punto se mueve siguiendo la trayectoria paramétrica.
+                    </div>
+                </div>
+
+                <h3>📘 Ejemplos con Ecuaciones</h3>
+                <div class="theory">
+                    <h4>1. Circunferencia</h4>
+                    <div class="equation">
+                        x(t) = r · cos(t)<br>
+                        y(t) = r · sin(t)<br>
+                        t ∈ [0, 2π]
+                    </div>
+                    <p>Curva cerrada simple. Muy usada para órbitas y ruedas.</p>
+
+                    <h4>2. Elipse</h4>
+                    <div class="equation">
+                        x(t) = a · cos(t)<br>
+                        y(t) = b · sin(t)<br>
+                        t ∈ [0, 2π]
+                    </div>
+
+                    <h4>3. Espiral de Arquímedes</h4>
+                    <div class="equation">
+                        x(t) = k · t · cos(t)<br>
+                        y(t) = k · t · sin(t)<br>
+                        t ∈ [0, 8π]
+                    </div>
+
+                    <h4>4. Figura de Lissajous</h4>
+                    <div class="equation">
+                        x(t) = A · sin(ω₁ t + δ)<br>
+                        y(t) = B · sin(ω₂ t)
+                    </div>
+                    <p>Patrones usados en osciloscopios y arte generativo.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== MALLAS POLIGONALES ==================== -->
+        <section id="mallas-section" style="background: rgba(15, 23, 42, 0.35);">
+            <h2>🧊 2. Mallas Poligonales (Polygon Meshes)</h2>
+           
+            <div class="card">
+                <h3>Teoría y Estructura Matemática</h3>
+                <div class="theory">
+                    <p>Una <strong>malla poligonal</strong> es una colección de vértices, aristas y caras (generalmente triángulos o cuadriláteros) que aproximan la superficie de un objeto 3D.</p>
+                    <p>Se representa como una tupla <strong>M = (V, E, F)</strong>, donde:</p>
+                    <ul>
+                        <li><strong>V</strong>: Conjunto de vértices (puntos en 3D).</li>
+                        <li><strong>E</strong>: Conjunto de aristas (segmentos entre vértices).</li>
+                        <li><strong>F</strong>: Conjunto de caras (polígonos, usualmente triángulos para renderizado eficiente).</li>
+                    </ul>
+                    <div class="equation">
+                        Característica de Euler (para poliedros convexos):<br>
+                        <strong>V - E + F = 2</strong>
+                    </div>
+                    <p><strong>Ejemplo del Cubo:</strong> V=8, E=12, F=6 → 8 - 12 + 6 = 2.</p>
+                   
+                    <div class="info-box">
+                        <strong>Ventajas en Computación Gráfica:</strong> Fácil de renderizar con GPU, soporta texturas y iluminación. Se usan en casi todos los videojuegos y modelado 3D (OBJ, FBX, etc.).
+                    </div>
+                    <p><strong>Estructuras de datos comunes:</strong> Listas de vértices + índices de caras, Winged-Edge, Half-Edge (más eficiente para operaciones topológicas).</p>
+                </div>
+
+                <div class="canvas-container">
+                    <h3>🎮 Malla Poligonal 3D Interactiva - Cubo Wireframe</h3>
+                    <canvas id="mallaCanvas" width="780" height="520"></canvas>
+                    <div class="controls">
+                        <label>Rot. X: <input type="range" id="rotX" min="0" max="360" value="25"></label>
+                        <label>Rot. Y: <input type="range" id="rotY" min="0" max="360" value="45"></label>
+                        <label>Rot. Z: <input type="range" id="rotZ" min="0" max="360" value="10"></label>
+                        <label>Escala: <input type="range" id="escala" min="0.5" max="2.5" step="0.1" value="1.2"></label>
+                        <button onclick="toggleMallaAnim()">⏯️ Auto-Rotación</button>
+                        <button onclick="resetMalla()">🔄 Reset Vista</button>
+                        <button onclick="toggleSolid()">⬛ Sólido / Wireframe</button>
+                    </div>
+                </div>
+
+                <h3>Ejemplo : Cubo como Malla Poligonal</h3>
+                <div class="theory">
+                    <p><strong>Vértices del cubo</strong> (coordenadas normalizadas [-1,1]³):</p>
+                    <div class="equation" style="font-size: 0.95em;">
+                        [-1,-1,-1], [1,-1,-1], [1,1,-1], [-1,1,-1],<br>
+                        [-1,-1,1], [1,-1,1], [1,1,1], [-1,1,1]
+                    </div>
+                    <p><strong>Aristas</strong>: Conexiones entre vértices que forman los bordes.</p>
+                    <p><strong>Caras</strong>: 6 cuadriláteros (o 12 triángulos si se triangulan).</p>
+                    <p>En renderizado real se aplica:</p>
+                    <ol>
+                        <li>Transformaciones (rotación, traslación, escala).</li>
+                        <li>Proyección perspectiva u ortogonal.</li>
+                        <li>Rasterización de polígonos.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>COMPUTACIÓN GRÁFICA - 2026</p>
+    </footer>
+
+    <script>
+        // ==================== CURVAS PARAMÉTRICAS ====================
+        const curvaCanvas = document.getElementById("curvaCanvas");
+        const ctxCurva = curvaCanvas.getContext("2d");
+        const curvaTipo = document.getElementById("curvaTipo");
+        const velocidadSlider = document.getElementById("velocidad");
+        const tamanoSlider = document.getElementById("tamano");
+        const paramExtraSlider = document.getElementById("paramExtra");
+        let tCurva = 0;
+        let animCurva = true;
+
+        const curvas = {
+            circulo: (t, tamano) => ({ x: tamano * Math.cos(t), y: tamano * Math.sin(t) }),
+            elipse: (t, tamano) => ({ x: tamano * 1.6 * Math.cos(t), y: tamano * 0.75 * Math.sin(t) }),
+            espiral: (t, tamano, extra) => ({
+                x: tamano * (t * 0.18) * Math.cos(t * extra),
+                y: tamano * (t * 0.18) * Math.sin(t * extra)
+            }),
+            lissajous: (t, tamano, extra) => ({
+                x: tamano * Math.sin(t * 3),
+                y: tamano * Math.sin(t * extra + Math.PI / 3)
+            }),
+            hipocicloide: (t, tamano) => ({
+                x: tamano * (2 * Math.cos(t) + Math.cos(2 * t)),
+                y: tamano * (2 * Math.sin(t) - Math.sin(2 * t))
+            }),
+            trocoide: (t, tamano, extra) => ({
+                x: tamano * (extra * Math.cos(t) - Math.cos(extra * t)),
+                y: tamano * (extra * Math.sin(t) - Math.sin(extra * t))
+            })
+        };
+
+        function dibujarCurva() {
+            const tipoNombre = curvaTipo.value;
+            const velocidad = parseFloat(velocidadSlider.value);
+            const tamano = parseFloat(tamanoSlider.value);
+            const extra = parseFloat(paramExtraSlider.value);
+            const centerX = 390;
+            const centerY = 260;
+
+            ctxCurva.fillStyle = "#020617";
+            ctxCurva.fillRect(0, 0, 780, 520);
+
+            ctxCurva.strokeStyle = "rgba(56, 189, 248, 0.25)";
+            ctxCurva.lineWidth = 1.5;
+            ctxCurva.beginPath();
+            ctxCurva.moveTo(40, centerY); ctxCurva.lineTo(740, centerY);
+            ctxCurva.moveTo(centerX, 40); ctxCurva.lineTo(centerX, 480);
+            ctxCurva.stroke();
+
+            ctxCurva.save();
+            ctxCurva.translate(centerX, centerY);
+            ctxCurva.scale(1, -1);
+
+            const tipoFunc = curvas[tipoNombre];
+            let maxT = tipoNombre === "espiral" || tipoNombre === "trocoide" ? 18 : 12 * Math.PI;
+
+            // Curva estática
+            ctxCurva.strokeStyle = "rgba(103, 232, 249, 0.45)";
+            ctxCurva.lineWidth = 3.5;
+            ctxCurva.shadowBlur = 8;
+            ctxCurva.shadowColor = "#67e8f9";
+            ctxCurva.beginPath();
+            for (let i = 0; i <= 280; i++) {
+                const u = (i / 280) * maxT;
+                const punto = tipoFunc(u, tamano, extra);
+                if (i === 0) ctxCurva.moveTo(punto.x, punto.y);
+                else ctxCurva.lineTo(punto.x, punto.y);
+            }
+            ctxCurva.stroke();
+
+            // Punto animado
+            const puntoAnim = tipoFunc(tCurva, tamano, extra);
+            ctxCurva.fillStyle = "#22c55e";
+            ctxCurva.shadowBlur = 25;
+            ctxCurva.shadowColor = "#22c55e";
+            ctxCurva.beginPath();
+            ctxCurva.arc(puntoAnim.x, puntoAnim.y, 9, 0, Math.PI * 2);
+            ctxCurva.fill();
+
+            // Cola de trayectoria
+            ctxCurva.strokeStyle = "rgba(34, 197, 94, 0.75)";
+            ctxCurva.lineWidth = 4;
+            ctxCurva.shadowBlur = 0;
+            ctxCurva.beginPath();
+            for (let i = 0; i < 65; i++) {
+                const u = Math.max(0, tCurva - i * 0.08);
+                const punto = tipoFunc(u, tamano, extra);
+                if (i === 0) ctxCurva.moveTo(punto.x, punto.y);
+                else ctxCurva.lineTo(punto.x, punto.y);
+            }
+            ctxCurva.stroke();
+
+            ctxCurva.restore();
+
+            // Actualizar info
+            document.getElementById("curvaInfo").innerHTML = `
+                <strong>Curva actual:</strong> ${curvaTipo.options[curvaTipo.selectedIndex].text} | 
+                t ≈ ${tCurva.toFixed(2)} | 
+                Vel: ${velocidad.toFixed(3)}
+            `;
+
+            if (animCurva) {
+                tCurva += velocidad;
+                if (tCurva > maxT + 2) tCurva = 0;
+                requestAnimationFrame(dibujarCurva);
+            }
+        }
+
+        function toggleCurvaAnim() {
+            animCurva = !animCurva;
+            if (animCurva) dibujarCurva();
+        }
+
+        function resetCurva() {
+            tCurva = 0;
+            dibujarCurva();
+        }
+
+        // ==================== MALLAS POLIGONALES ====================
+        const mallaCanvas = document.getElementById("mallaCanvas");
+        const ctxMalla = mallaCanvas.getContext("2d");
+        const rotXSlider = document.getElementById("rotX");
+        const rotYSlider = document.getElementById("rotY");
+        const rotZSlider = document.getElementById("rotZ");
+        const escalaSlider = document.getElementById("escala");
+
+        let vertices = [
+            [-1,-1,-1], [1,-1,-1], [1,1,-1], [-1,1,-1],
+            [-1,-1,1], [1,-1,1], [1,1,1], [-1,1,1]
+        ];
+
+        const aristas = [
+            [0,1],[1,2],[2,3],[3,0], [4,5],[5,6],[6,7],[7,4],
+            [0,4],[1,5],[2,6],[3,7]
+        ];
+
+        const caras = [
+            [0,1,2], [0,2,3], [4,5,6], [4,6,7],
+            [0,1,5], [0,5,4], [2,3,7], [2,7,6],
+            [1,2,6], [1,6,5], [0,3,7], [0,7,4]
+        ];
+
+        let rotX = 25, rotY = 45, rotZ = 10;
+        let autoRotate = false;
+        let isSolid = false;
+        let escala = 1.2;
+
+        function rotarX(v, angle) {
+            const c = Math.cos(angle), s = Math.sin(angle);
+            return [v[0], v[1]*c - v[2]*s, v[1]*s + v[2]*c];
+        }
+        function rotarY(v, angle) {
+            const c = Math.cos(angle), s = Math.sin(angle);
+            return [v[0]*c + v[2]*s, v[1], -v[0]*s + v[2]*c];
+        }
+        function rotarZ(v, angle) {
+            const c = Math.cos(angle), s = Math.sin(angle);
+            return [v[0]*c - v[1]*s, v[0]*s + v[1]*c, v[2]];
+        }
+
+        function proyectar(v) {
+            const dist = 420;
+            const factor = dist / (dist + v[2] * 1.8 + 4);
+            return {
+                x: 390 + v[0] * 140 * factor * escala,
+                y: 260 - v[1] * 140 * factor * escala
+            };
+        }
+
+        function dibujarMalla() {
+            ctxMalla.fillStyle = "#020617";
+            ctxMalla.fillRect(0, 0, 780, 520);
+
+            let verticesRot = vertices.map(v => {
+                let vr = rotarX(v, rotX * Math.PI / 180);
+                vr = rotarY(vr, rotY * Math.PI / 180);
+                vr = rotarZ(vr, rotZ * Math.PI / 180);
+                return vr;
+            });
+
+            const proyectados = verticesRot.map(proyectar);
+
+            if (isSolid) {
+                ctxMalla.strokeStyle = "#67e8f9";
+                ctxMalla.lineWidth = 1.5;
+                caras.forEach(([a,b,c]) => {
+                    const p1 = proyectados[a];
+                    const p2 = proyectados[b];
+                    const p3 = proyectados[c];
+                    ctxMalla.fillStyle = "rgba(56, 189, 248, 0.25)";
+                    ctxMalla.beginPath();
+                    ctxMalla.moveTo(p1.x, p1.y);
+                    ctxMalla.lineTo(p2.x, p2.y);
+                    ctxMalla.lineTo(p3.x, p3.y);
+                    ctxMalla.closePath();
+                    ctxMalla.fill();
+                    ctxMalla.stroke();
+                });
+            } else {
+                ctxMalla.strokeStyle = "#38bdf8";
+                ctxMalla.lineWidth = 3.5;
+                ctxMalla.shadowBlur = 12;
+                ctxMalla.shadowColor = "#38bdf8";
+                aristas.forEach(([i1, i2]) => {
+                    const p1 = proyectados[i1];
+                    const p2 = proyectados[i2];
+                    ctxMalla.beginPath();
+                    ctxMalla.moveTo(p1.x, p1.y);
+                    ctxMalla.lineTo(p2.x, p2.y);
+                    ctxMalla.stroke();
+                });
+            }
+
+            ctxMalla.fillStyle = "#22c55e";
+            ctxMalla.shadowBlur = 18;
+            ctxMalla.shadowColor = "#22c55e";
+            proyectados.forEach(p => {
+                ctxMalla.beginPath();
+                ctxMalla.arc(p.x, p.y, 6.5, 0, Math.PI * 2);
+                ctxMalla.fill();
+            });
+
+            if (autoRotate) {
+                rotY += 0.75;
+                if (rotY > 360) rotY = 0;
+                rotXSlider.value = Math.floor(rotX);
+                rotYSlider.value = Math.floor(rotY);
+            }
+
+            requestAnimationFrame(dibujarMalla);
+        }
+
+        function toggleMallaAnim() {
+            autoRotate = !autoRotate;
+        }
+
+        function resetMalla() {
+            rotX = 25; rotY = 45; rotZ = 10; escala = 1.2;
+            rotXSlider.value = 25;
+            rotYSlider.value = 45;
+            rotZSlider.value = 10;
+            escalaSlider.value = 1.2;
+        }
+
+        function toggleSolid() {
+            isSolid = !isSolid;
+        }
+
+        // Event listeners
+        curvaTipo.onchange = () => { tCurva = 0; dibujarCurva(); };
+        velocidadSlider.oninput = dibujarCurva;
+        tamanoSlider.oninput = dibujarCurva;
+        paramExtraSlider.oninput = dibujarCurva;
+
+        rotXSlider.oninput = () => rotX = parseFloat(rotXSlider.value);
+        rotYSlider.oninput = () => rotY = parseFloat(rotYSlider.value);
+        rotZSlider.oninput = () => rotZ = parseFloat(rotZSlider.value);
+        escalaSlider.oninput = () => { escala = parseFloat(escalaSlider.value); };
+
+        // Inicialización
+        window.onload = () => {
+            dibujarCurva();
+            dibujarMalla();
+        };
+    </script>
+</body>
+</html>
